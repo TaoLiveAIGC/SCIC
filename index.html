@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCIC: Scope- and Codebook-Aware Instruction Conditioning for Speaker-Adapted Expressive TTS</title>
+<style>
+  :root {
+    --pitch-bg:#e0edff;  --pitch-fg:#1d4ed8;
+    --energy-bg:#ffedd5; --energy-fg:#c2410c;
+    --speed-bg:#dcfce7;  --speed-fg:#15803d;
+    --sil-bg:#f3e8ff;    --sil-fg:#7e22ce;
+    --accent:#2563eb;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    background:#f8f9fb; color:#1f2937; line-height:1.75;
+  }
+  .container { max-width:900px; margin:0 auto; padding:56px 24px 72px; }
+
+  /* Header */
+  header { text-align:center; margin-bottom:48px; }
+  h1 { font-size:26px; font-weight:800; letter-spacing:.2px; line-height:1.4; }
+  .authors { margin-top:18px; font-size:15px; color:#374151; }
+  .affiliation { margin-top:6px; font-size:14px; color:#6b7280; font-style:italic; }
+
+  /* Nav */
+  nav {
+    display:flex; justify-content:center; flex-wrap:wrap; gap:8px 28px;
+    background:#fff; border:1px solid #e5e7eb; border-radius:12px;
+    padding:12px 20px; margin-bottom:44px; font-size:14.5px; font-weight:600;
+    position:sticky; top:12px; z-index:10; box-shadow:0 2px 8px rgba(0,0,0,.05);
+  }
+  nav a { color:var(--accent); text-decoration:none; }
+  nav a:hover { text-decoration:underline; }
+
+  /* Sections */
+  h2 {
+    font-size:21px; font-weight:800; margin:52px 0 8px;
+    padding-bottom:10px; border-bottom:2px solid #e5e7eb;
+  }
+  h2 .zh { font-weight:500; color:#9ca3af; font-size:15px; margin-left:10px; }
+  .section-intro { color:#6b7280; font-size:14.5px; margin-bottom:22px; }
+
+  /* Abstract */
+  .abstract {
+    background:#fff; border:1px solid #e5e7eb; border-radius:14px;
+    padding:26px 30px; font-size:15.5px; color:#374151; text-align:justify;
+  }
+  .abstract strong { color:#111827; }
+
+  /* Architecture */
+  .arch-desc { font-size:15.5px; color:#374151; margin-bottom:14px; }
+  .arch-list { list-style:none; }
+  .arch-list li {
+    background:#fff; border:1px solid #e5e7eb; border-left:3px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin-bottom:10px;
+    font-size:14.5px; color:#374151;
+  }
+  .arch-list li b { color:#111827; }
+
+  /* Figures */
+  figure { margin:0 0 34px; }
+  figure img {
+    width:100%; border:1px solid #e5e7eb; border-radius:12px; background:#fff;
+  }
+  figcaption { font-size:13.5px; color:#6b7280; margin-top:10px; text-align:center; }
+
+  /* Cards */
+  .card {
+    background:#fff; border:1px solid #e5e7eb; border-radius:14px;
+    padding:20px 24px; margin-bottom:14px; box-shadow:0 1px 2px rgba(0,0,0,.04);
+  }
+  .card-head { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  .text { font-size:15px; color:#374151; }
+  audio { width:100%; margin-top:14px; height:40px; }
+
+  /* Single-instruction groups */
+  .group { margin-bottom:26px; }
+  .group-name {
+    font-size:15px; font-weight:700; color:#111827; margin-bottom:10px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .group-name::before { content:''; width:4px; height:16px; border-radius:2px; background:var(--accent); }
+  .group-row { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+  .group-row.cols-3 { grid-template-columns:repeat(3,1fr); }
+  .cell {
+    background:#fff; border:1px solid #e5e7eb; border-radius:12px;
+    padding:14px 16px; box-shadow:0 1px 2px rgba(0,0,0,.04);
+    display:flex; flex-direction:column;
+  }
+  .cell .text { font-size:13.5px; line-height:1.65; flex:1; }
+  .cell audio { height:36px; margin-top:12px; }
+  @media (max-width:680px) {
+    .group-row, .group-row.cols-3 { grid-template-columns:1fr; }
+  }
+
+  .badge {
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:700; padding:3px 11px; border-radius:999px; white-space:nowrap;
+  }
+  .tag {
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:.85em; font-weight:600; padding:1px 6px; border-radius:6px; white-space:nowrap;
+  }
+  .badge.pitch,.tag.pitch { background:var(--pitch-bg); color:var(--pitch-fg); }
+  .badge.energy,.tag.energy { background:var(--energy-bg); color:var(--energy-fg); }
+  .badge.speed,.tag.speed { background:var(--speed-bg); color:var(--speed-fg); }
+  .badge.sil,.tag.sil { background:var(--sil-bg); color:var(--sil-fg); }
+
+  footer { margin-top:56px; text-align:center; color:#9ca3af; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>SCIC: Scope- and Codebook-Aware Instruction Conditioning<br>for Speaker-Adapted Expressive TTS</h1>
+    <p class="authors">Longyu Lu, Zongwei Du, Mengtao Xing, Zhuoqun Liu, Zifan Guan, Meiguang Jin<sup>*</sup>, Junfeng Ma</p>
+    <p class="affiliation">TaoLive-AIGC Team, Taobao &amp; Tmall Group of Alibaba</p>
+    <p class="affiliation"><sup>*</sup> Corresponding author</p>
+  </header>
+
+  <nav>
+    <a href="#abstract">Abstract</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#single">Single-Instruction Samples</a>
+    <a href="#multi">Multi-Instruction Samples</a>
+  </nav>
+
+  <h2 id="abstract">Abstract</h2>
+  <div class="abstract">
+    Long-form live-streaming TTS requires context-dependent prosody and paragraph-level coherence. However, many existing instruction-based TTS systems use global or uniform conditions, providing limited explicit control over clause-level relative prosodic changes. We introduce <strong>Speaker-Relative Inline Prosody Control</strong>, where each Pitch, Energy, or Speed instruction targets a clause relative to the preceding clause from the same speaker, while Pause uses an absolute duration interval. In codec-based TTS, Speed and Pause affect sequence length, whereas Pitch and Energy rely on residual codebooks. By analyzing Qwen3-TTS RVQ codebooks, we find that Energy concentrates in early residual codebooks, whereas Pitch accumulates across a deeper prefix. We therefore propose <strong>Scope- and Codebook-Aware Instruction Conditioning (SCIC)</strong>, combining a Temporal Instruction Router for frame-level tag activation with Tag-Specific Codebook Weighting over residual codebooks. SCIC improves speaker-relative Pitch and Energy control over standard instruction fine-tuning using text-token tags. We further apply multi-reward GDPO post-training to jointly optimize control and quality, improving control accuracy while preserving CER and speaker similarity. In long-form synthesis, SCIC produces a more distinct paragraph-level expressive hierarchy than speaker-adapted SFT without instructions.
+  </div>
+
+  <h2 id="architecture">Architecture</h2>
+  <figure>
+    <img src="architecture.png" alt="SCIC architecture" loading="lazy">
+  </figure>
+  <p class="arch-desc">
+    SCIC consists of four main components:
+  </p>
+  <ul class="arch-list">
+    <li><b>Main Talker</b> — the autoregressive backbone that predicts the first codebook q<sub>0</sub>, advances the acoustic-frame sequence, and provides the frame-level hidden state h<sub>t</sub> to downstream components.</li>
+    <li><b>Temporal Instruction Router</b> — predicts a frame-level activation strength for each inline Pitch/Energy tag from h<sub>t</sub>, determining <i>when</i> and <i>how strongly</i> an instruction is active, so that control applies only to the tagged clause rather than the whole utterance.</li>
+    <li><b>Tag-Specific Codebook Weighting</b> — assigns each tag a learned weight on every residual codebook q<sub>1</sub>&ndash;q<sub>15</sub>, determining <i>where</i> the instruction signal is injected along the codebook axis; the Router output and codebook weight jointly scale the tag embedding to form the conditioning signal s<sub>t,k</sub>.</li>
+    <li><b>MTP (Multi-Token Prediction)</b> — predicts the residual codebooks q<sub>1</sub>&ndash;q<sub>15</sub> within each frame, taking the conditioned inputs u<sub>t,k</sub> into which the scaled tag embedding is passed.</li>
+  </ul>
+
+  <h2 id="single">Single-Instruction Samples</h2>
+  <p class="section-intro">Each sample contains one inline instruction tag embedded in the text. The tag controls the following clause relative to the preceding clause.</p>
+  <div id="single-groups"></div>
+
+  <h2 id="multi">Multi-Instruction Samples</h2>
+  <p class="section-intro">Long-form samples with multiple inline tags, combining Pitch, Energy, Speed, and Pause instructions within a single paragraph.</p>
+  <div id="multi-list"></div>
+
+  <footer>SCIC Demo &middot; TaoLive-AIGC Team &middot; Audio samples are for demonstration only</footer>
+</div>
+
+<script>
+const SINGLE_GROUPS = [
+  { name: 'Pitch', items: [
+    { label:'pitch_down', audio:'audio/pitch_down.wav',
+      text:'性能要更强，当然你可以看一下，就是你要追求更轻更小的，[pitch_down]你就选择咱们的一个那个啥。' },
+    { label:'pitch_up', audio:'audio/pitch_up.wav',
+      text:'看您自己的一个个人需求了啊，[pitch_up]那我们给大家先弹链接，来三二一。' }
+  ]},
+  { name: 'Energy', items: [
+    { label:'energy_down', audio:'audio/energy_down.wav',
+      text:'像我们家的茶具的话呢，选择是非常多的。如果是您正在挑选的茶具当中，也可以在我们下方的茶具赠礼专区当中进行到的选择。二十二号是吗？[energy_down]可以的我这边看一下。' },
+    { label:'energy_up', audio:'audio/energy_up.wav',
+      text:'所以大家如果说喜欢这款，可以直接去入手哈。[energy_up]好我们现在换播了，朋友们，我们现在邀请下一位主播给大家讲解了哈。' }
+  ]},
+  { name: 'Speed', items: [
+    { label:'speed_down', audio:'audio/speed_down.wav',
+      text:'彩色的一些裤装，那其实上半身古白色，它什么都能搭，非常的百搭。那么，如果说你是属于这种非常活力女生，可以去入手一下舞动黄。这个黄色的话呢，[speed_down]很嫩非常浅的一个鹅黄色。' },
+    { label:'speed_up', audio:'audio/speed_up.wav',
+      text:'十二罐抽奖礼赠的话，我们家乐视多功能的一个电热锅，那以及我们家的一个一次性翻盖收纳箱啊，一次性翻盖收纳箱，这是咱们的一个抽奖活动啊，[speed_up]这个是我们的一个抽奖活动。' }
+  ]},
+  { name: 'Pause', items: [
+    { label:'sil_L1', audio:'audio/sil_L1.wav',
+      text:'好穿<sil_L1>，真的好穿，脚一点都不累。' },
+    { label:'sil_L2', audio:'audio/sil_L2.wav',
+      text:'我想想啊<sil_L2>，对，送两个小样加化妆包。' },
+    { label:'sil_L3', audio:'audio/sil_L3.wav',
+      text:'猜猜今天多少钱<sil_L3>？只要十九块九！' }
+  ]}
+];
+
+const MULTI = [
+  { audio:'audio/multi_1.wav',
+    text:'这个第一个呢，[speed_down]金沙蛋黄嫩鸡披萨。也是一个九英寸的一个披萨，双芝士卷边，你这两个选择去选。那我个人觉得第一个SKU它赢在了卷边好吃<sil_L1>，第二个SKU赢在了量比较大。你根据自己的一个需求<sil_L1>，根据自己的一个爱好去做一个选择。我个人呢是特别喜欢吃它这个双芝士卷边的这款披萨的，好吃，爱吃<sil_L1>，喜欢吃，好吧？[speed_up]大家如果跟我一样，也可以去选择咱们这个链接。那关键是呢<sil_L2>，[speed_down]下单价格呢是五十三块二毛九。我个人觉得啊，这款披萨就是比隔壁家的那个要好吃，真的，[speed_up]我我我特别不爱吃隔壁家那个披萨，我觉得那个饼皮啊干巴又硬。' },
+  { audio:'audio/multi_2.wav',
+    text:'啊，这款沙发床呢也是主播很喜欢的一个款式，因为它是这种很温柔的一个用料。很温柔的这样子的一个配色，对吧<sil_L2>？而且呢，我感觉跟我今天的这一身很搭，都是这种浅色系，就感觉融为一体的感觉，有没有<sil_L2>？啊，这是我很喜欢的一个款。首先呢，它的型号先跟大家报一下<sil_L1>，这是咱们的一个T 零六四杠A 的一个沙发床款。这款呢，它是呃可以做到一物多用的，既是沙发啊，既是直排沙发<sil_L1>，也是咱们的一个沙发床，对吧<sil_L2>？把它伸展开来的话，也是一张小床。[energy_down]我个人觉得的话呢，就。[pitch_up][speed_up]因为这那种款式搭配到我这种猫抓布的一个面料的话呢，真的是很温柔<sil_L1>，很治愈。然后呢，[speed_down]这种巴伐猫抓布的话。呃，是这种短绒款的，我可以近距离给的你们看一下<sil_L2>。看到了吗？' },
+  { audio:'audio/multi_3.wav',
+    text:'呃显瘦的，好看的啊。[speed_up]来一号链接最后一单，最后一条围巾了啊。围巾我都是同色系送给你的，随包一起发出。而且如果实在是纠结颜色的话，我是真的很建议你们拍两个颜色。因为全部都是可以免费去试穿，退货运费都由我们家去承担<sil_L2>。因为这一款的话还没有那么被普及到，我现在的话夏天就是想让你们多去感受一下，[speed_down]为什么它是能被称之为世界四大顶奢之一的。等到冬天大家都买过感受了，知道它的好了。真的就越来越贵，越来越少啊！[energy_up][pitch_up]趁着现在打五折，赶紧下单！' },
+  { audio:'audio/multi_4.wav',
+    text:'动物蛋白纤维是小蚕宝宝吐丝吐出来的，我们的头发也是动物蛋白纤维。啊，像普通的棉<sil_L1>，人造，丝，它是什么<sil_L2>？比如说植物，像亚麻，它是植物中提取出来的植物面料纤维。[speed_down]而且百度百科都说桑蚕丝它具有十八种氨基酸，更贴合皮肤。[speed_up]夏天皮肤敏敏的，皮肤比较害怕出汗的，它会很干爽，更快的速干吸汗。还有一个<sil_L2>，我们说这个活文物，你们自己看上身的面料光泽感和它上身自带的这种纹理，[pitch_up]太美了，真的好美啊！就穿上这种小旗袍，你去重要的场合<sil_L1>，重要的事情，[energy_up]立马有它的贵气感！' }
+];
+
+function escHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function dimOf(tag) {
+  return tag[0] === '[' ? tag.slice(1).split('_')[0] : 'sil';
+}
+function renderText(text) {
+  return escHtml(text).replace(
+    /(\[(?:pitch|energy|speed)_(?:up|down)\]|&lt;sil_L\d&gt;)/g,
+    m => '<span class="tag ' + (m[0] === '[' ? m.slice(1).split('_')[0] : 'sil') + '">' + m + '</span>'
+  );
+}
+function renderCard(c) {
+  let head = '';
+  if (c.label) {
+    head = '<div class="card-head"><span class="badge ' + dimOf('[' + c.label + ']') + '">' + c.label + '</span></div>';
+  }
+  return '<div class="card">'
+    + head
+    + '<p class="text">' + renderText(c.text) + '</p>'
+    + '<audio controls preload="none" src="' + c.audio + '"></audio>'
+    + '</div>';
+}
+function renderGroup(group) {
+  const cells = group.items.map(c =>
+    '<div class="cell">'
+    + '<span class="badge ' + dimOf('[' + c.label + ']') + '">' + c.label + '</span>'
+    + '<p class="text">' + renderText(c.text) + '</p>'
+    + '<audio controls preload="none" src="' + c.audio + '"></audio>'
+    + '</div>'
+  ).join('');
+  return '<div class="group">'
+    + '<h3 class="group-name">' + group.name + '</h3>'
+    + '<div class="group-row' + (group.items.length >= 3 ? ' cols-3' : '') + '">' + cells + '</div>'
+    + '</div>';
+}
+document.getElementById('single-groups').innerHTML = SINGLE_GROUPS.map(renderGroup).join('');
+document.getElementById('multi-list').innerHTML = MULTI.map(renderCard).join('');
+</script>
+</body>
+</html>
